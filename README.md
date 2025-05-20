@@ -1,0 +1,2 @@
+# CadoCurrency
+UwU
