@@ -1,416 +1,124 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Cadocurrency — Fake Crypto Demo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadocurrency Miner</title>
 <style>
-  :root{--bg:#0b1020;--card:#0f1724;--accent:#7dd3fc;--muted:#9aa6bf;--good:#8ef5a1;}
-  body{font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0;background:linear-gradient(180deg,#05060a 0%,var(--bg) 100%);color:#e6eef8}
-  .wrap{max-width:980px;margin:28px auto;padding:18px}
-  header{display:flex;align-items:center;gap:16px}
-  h1{margin:0;font-size:20px}
-  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
-  .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 24px rgba(2,6,23,.6)}
-  label{font-size:12px;color:var(--muted)}
-  input,button,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;box-sizing:border-box}
-  button{cursor:pointer;background:linear-gradient(90deg, rgba(125,211,252,0.12), rgba(125,211,252,0.06));border:1px solid rgba(125,211,252,.12)}
-  small{color:var(--muted)}
-  .row{display:flex;gap:8px}
-  .tiny{font-size:12px;padding:6px}
-  pre{white-space:pre-wrap;word-break:break-word;background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;overflow:auto}
-  .muted{color:var(--muted)}
-  .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
-  .list{max-height:360px;overflow:auto}
-  .big{font-size:18px;font-weight:700}
-  footer{margin-top:18px;color:var(--muted);font-size:13px}
+  body {
+    background: #1a1a1a;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  h1 { margin-top: 20px; }
+  #mineButton {
+    padding: 20px 40px;
+    font-size: 20px;
+    background: #ffcc00;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 20px;
+    transition: transform 0.1s;
+  }
+  #mineButton:active {
+    transform: scale(0.95);
+  }
+  .shop {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .item {
+    background: #333;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    width: 180px;
+  }
+  button.buy {
+    background: #00ccff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 5px;
+    border-radius: 5px;
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#a78bfa)"></div>
-      <div>
-        <h1>Cadocurrency — demo</h1>
-        <small class="muted">A fake, browser-only cryptocurrency for demos/learning</small>
-      </div>
-    </header>
+<h1>Cadocurrency Miner</h1>
+<p>Cadocurrency: <span id="cadocurrency">0</span> ₡</p>
+<button id="mineButton">Mine Cadocurrency!</button>
 
-    <div class="grid">
-      <!-- Left: Controls + chain -->
-      <div>
-        <div class="card">
-          <h3>Wallet</h3>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div style="flex:1">
-              <label>Address (public key)</label>
-              <pre id="address" class="pill">—</pre>
-              <small class="muted">This demo uses a simple random pseudo-key (not secure).</small>
-            </div>
-            <div style="width:160px">
-              <label>&nbsp;</label>
-              <div class="row">
-                <button id="btn-new">New Wallet</button>
-                <button id="btn-copy" class="tiny">Copy</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>Balance & Faucet</h3>
-          <div class="row" style="align-items:center">
-            <div style="flex:1">
-              <div class="big" id="balance">0 CADO</div>
-              <small class="muted">Balance is computed from the chain + pending TXs</small>
-            </div>
-            <div style="width:160px">
-              <label>&nbsp;</label>
-              <div class="row">
-                <button id="btn-faucet">Get Faucet (100 CADO)</button>
-                <button id="btn-refresh" class="tiny">Refresh</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>Send Cadocurrency</h3>
-          <label>Recipient address</label>
-          <input id="toAddress" placeholder="paste recipient address..." />
-          <label>Amount (CADO)</label>
-          <input id="amount" type="number" min="0" step="1" value="10" />
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="btn-send">Create Transaction</button>
-            <button id="btn-mine">Mine (include pending tx)</button>
-            <select id="difficulty" title="Proof-of-work difficulty">
-              <option value="3">Difficulty: 3 zeros</option>
-              <option value="4" selected>Difficulty: 4 zeros</option>
-              <option value="5">Difficulty: 5 zeros</option>
-            </select>
-          </div>
-          <small class="muted">Mining simulates proof-of-work to add pending transactions.</small>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>Pending Transactions</h3>
-          <div id="pending" class="list"></div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>Blockchain (latest blocks)</h3>
-          <div id="chain" class="list"></div>
-        </div>
-      </div>
-
-      <!-- Right: Info / raw -->
-      <div>
-        <div class="card">
-          <h3>Quick Controls</h3>
-          <div class="row" style="margin-top:8px">
-            <button id="btn-reset">Reset Chain</button>
-            <button id="btn-export" class="tiny">Export JSON</button>
-            <button id="btn-import" class="tiny">Import JSON</button>
-          </div>
-          <small class="muted">You can export/import the chain state (local only).</small>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>Chain JSON</h3>
-          <textarea id="raw" style="height:220px;font-family:monospace;background:transparent;color:inherit"></textarea>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h3>About & Notes</h3>
-          <p class="muted">Cadocurrency is a local demo: keys are random, mining is toy PoW, and everything runs in your browser/storage. Great for learning and showing off.</p>
-          <p><small>Not secure. Do not use for real funds.</small></p>
-        </div>
-      </div>
-    </div>
-
-    <footer>Made for demo — Cadocurrency</footer>
+<h2>Upgrades</h2>
+<div class="shop" id="shop">
+  <div class="item">
+    <h3>Mining Rig</h3>
+    <p>+1 ₡ per second</p>
+    <p>Cost: <span class="price" data-price="50">50</span> ₡</p>
+    <button class="buy" data-type="rig" data-cost="50">Buy</button>
   </div>
+  <div class="item">
+    <h3>Crypto Farm</h3>
+    <p>+5 ₡ per second</p>
+    <p>Cost: <span class="price" data-price="250">250</span> ₡</p>
+    <button class="buy" data-type="farm" data-cost="250">Buy</button>
+  </div>
+  <div class="item">
+    <h3>Quantum Miner</h3>
+    <p>+20 ₡ per second</p>
+    <p>Cost: <span class="price" data-price="1000">1000</span> ₡</p>
+    <button class="buy" data-type="quantum" data-cost="1000">Buy</button>
+  </div>
+</div>
 
 <script>
-/*
-  Cadocurrency demo
-  - Uses browser crypto.subtle.digest for SHA-256
-  - Chain stored in localStorage under "cado_chain_v1"
-  - Very small/simple: transactions = {from,to,amount,timestamp}
-  - Special "mint" address creates new CADO (faucet)
-*/
-
-const STATE_KEY = 'cado_chain_v1';
-
-// utility: hex from buffer
-function toHex(buffer){
-  const bytes = new Uint8Array(buffer);
-  return Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-// async sha256 of string
-async function sha256(text){
-  const enc = new TextEncoder();
-  const data = enc.encode(text);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return toHex(hash);
-}
-
-// make a fake key/address (not real crypto)
-function genAddress(){
-  // 32 random bytes -> hex
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return toHex(arr).slice(0,40); // shorten for display
-}
-
-// default genesis block
-async function genesisBlock(){
-  const block = {
-    index: 0,
-    timestamp: Date.now(),
-    transactions: [],
-    previousHash: '0'.repeat(64),
-    nonce: 0,
-    hash: ''
-  };
-  block.hash = await sha256(JSON.stringify(block));
-  return block;
-}
-
-// blockchain object
-let C = {
-  chain: [],
-  pending: [],
-  difficulty: 4
+let cadocurrency = 0;
+let cps = 0; // cadocurrency per second
+let upgrades = {
+  rig: {count: 0, cps: 1, cost: 50},
+  farm: {count: 0, cps: 5, cost: 250},
+  quantum: {count: 0, cps: 20, cost: 1000}
 };
 
-// load/save
-async function loadState(){
-  const raw = localStorage.getItem(STATE_KEY);
-  if(!raw) {
-    const g = await genesisBlock();
-    C.chain = [g];
-    C.pending = [];
-    saveState();
-  } else {
-    try {
-      const parsed = JSON.parse(raw);
-      C.chain = parsed.chain || [await genesisBlock()];
-      C.pending = parsed.pending || [];
-    } catch(e){
-      console.warn('Load failed', e);
-      C.chain = [await genesisBlock()];
-      C.pending = [];
+const cadDisplay = document.getElementById('cadocurrency');
+const mineButton = document.getElementById('mineButton');
+const shopButtons = document.querySelectorAll('.buy');
+
+// Clicking to mine
+mineButton.addEventListener('click', () => {
+  cadocurrency += 1;
+  cadDisplay.textContent = Math.floor(cadocurrency);
+});
+
+// Buying upgrades
+shopButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const type = button.dataset.type;
+    const upgrade = upgrades[type];
+    if (cadocurrency >= upgrade.cost) {
+      cadocurrency -= upgrade.cost;
+      upgrade.count += 1;
+      cps += upgrade.cps;
+      upgrade.cost = Math.floor(upgrade.cost * 1.5); // increase cost
+      button.dataset.cost = upgrade.cost;
+      button.previousElementSibling.textContent = `Cost: ${upgrade.cost} ₡`;
+      cadDisplay.textContent = Math.floor(cadocurrency);
     }
-  }
-  refreshUI();
-}
-
-function saveState(){
-  localStorage.setItem(STATE_KEY, JSON.stringify({chain:C.chain,pending:C.pending}));
-}
-
-// balance: iterate transactions. Minting from 'mint' creates new tokens.
-function getBalance(address){
-  let bal = 0;
-  // chain transactions
-  C.chain.forEach(b=>{
-    b.transactions.forEach(tx=>{
-      if(tx.from === address) bal -= tx.amount;
-      if(tx.to === address) bal += tx.amount;
-    });
   });
-  // pending txs (subtract outgoing)
-  C.pending.forEach(tx=>{
-    if(tx.from === address) bal -= tx.amount;
-    if(tx.to === address) bal += tx.amount;
-  });
-  return bal;
-}
-
-// create transaction and add to pending
-function createTx(from,to,amount){
-  if(!from || !to) return {ok:false,msg:'from/to required'};
-  amount = Number(amount) || 0;
-  if(amount <= 0) return {ok:false,msg:'amount must be positive'};
-  // simple allow mint: from === 'mint'
-  if(from !== 'mint' && getBalance(from) < amount) return {ok:false,msg:'insufficient funds'};
-  const tx = {from,to,amount,timestamp:Date.now(),id:Math.random().toString(36).slice(2,10)};
-  C.pending.push(tx);
-  saveState();
-  refreshUI();
-  return {ok:true,tx};
-}
-
-// compute block hash from fields
-async function blockHash(block){
-  // canonicalize order
-  const clone = {
-    index:block.index,
-    timestamp:block.timestamp,
-    transactions:block.transactions,
-    previousHash:block.previousHash,
-    nonce:block.nonce
-  };
-  return await sha256(JSON.stringify(clone));
-}
-
-// mine: try nonce until hash starts with difficulty zeros
-async function minePending(minerAddress){
-  if(C.pending.length === 0) {
-    alert('No pending transactions to mine.');
-    return;
-  }
-  const last = C.chain[C.chain.length-1];
-  const newIndex = last.index + 1;
-  const block = {
-    index: newIndex,
-    timestamp: Date.now(),
-    transactions: [...C.pending],
-    previousHash: last.hash,
-    nonce: 0,
-    hash: ''
-  };
-
-  const targetPrefix = '0'.repeat(C.difficulty);
-  const start = Date.now();
-  // simplest PoW loop
-  while(true){
-    block.nonce++;
-    block.hash = await blockHash(block);
-    if(block.hash.startsWith(targetPrefix)) break;
-    // small yield to avoid freezing UI occasionally
-    if(block.nonce % 500 === 0) {
-      await new Promise(r=>setTimeout(r, 0));
-    }
-  }
-  const end = Date.now();
-  // reward to miner (small fixed reward)
-  const rewardTx = {from:'mint', to: minerAddress, amount: 10, timestamp: Date.now(), id: 'r-' + Math.random().toString(36).slice(2,8)};
-  block.transactions.push(rewardTx);
-  C.chain.push(block);
-  C.pending = [];
-  saveState();
-  refreshUI();
-  alert(`Mined block ${block.index} in ${(end-start)/1000}s (nonce ${block.nonce}) — reward 10 CADO`);
-}
-
-// quick UI helpers
-const el = s=>document.querySelector(s);
-const els = s=>[...document.querySelectorAll(s)];
-function refreshUI(){
-  // address display
-  el('#address').textContent = currentAddress || '—';
-  el('#balance').textContent = (currentAddress ? getBalance(currentAddress) : 0) + ' CADO';
-  // pending
-  const p = el('#pending');
-  p.innerHTML = '';
-  if(C.pending.length === 0) p.innerHTML = '<small class="muted">No pending transactions</small>';
-  else {
-    C.pending.slice().reverse().forEach(tx=>{
-      const d = document.createElement('div');
-      d.style.padding='8px'; d.style.marginBottom='6px'; d.style.borderRadius='8px'; d.style.background='rgba(255,255,255,0.02)';
-      d.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${tx.amount} CADO</strong> <span class="muted">from</span> <code>${short(tx.from)}</code></div><div class="muted">${new Date(tx.timestamp).toLocaleTimeString()}</div></div><div style="margin-top:6px"><small class="muted">to</small> <code>${short(tx.to)}</code></div>`;
-      p.appendChild(d);
-    });
-  }
-  // chain
-  const cEl = el('#chain');
-  cEl.innerHTML = '';
-  C.chain.slice().reverse().forEach(block=>{
-    const b = document.createElement('div');
-    b.style.padding='10px'; b.style.marginBottom='8px'; b.style.borderRadius='8px'; b.style.background='linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))';
-    b.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><strong>Block ${block.index}</strong> <small class="muted">(${new Date(block.timestamp).toLocaleString()})</small></div><div class="pill">${block.transactions.length} tx</div></div>
-    <div style="margin-top:8px"><small class="muted">hash</small><pre style="margin:4px 0;padding:8px;border-radius:8px;background:rgba(0,0,0,0.2)">${short(block.hash)}</pre></div>`;
-    // show txs
-    block.transactions.forEach(tx=>{
-      const item = document.createElement('div');
-      item.style.marginTop='6px'; item.innerHTML = `<small class="muted">${tx.id}</small> <strong>${tx.amount} CADO</strong> <span class="muted">from</span> <code>${short(tx.from)}</code> <span class="muted">to</span> <code>${short(tx.to)}</code>`;
-      b.appendChild(item);
-    });
-    cEl.appendChild(b);
-  });
-
-  // raw JSON
-  el('#raw').value = JSON.stringify({chain:C.chain,pending:C.pending}, null, 2);
-}
-
-// helpers
-function short(s){
-  if(!s) return '—';
-  return s.slice(0,8) + '…' + s.slice(-6);
-}
-
-// state: current address
-let currentAddress = null;
-
-// wire up buttons
-document.getElementById('btn-new').addEventListener('click', ()=>{
-  currentAddress = genAddress();
-  refreshUI();
-});
-document.getElementById('btn-copy').addEventListener('click', ()=>{
-  if(!currentAddress) return alert('No address yet — generate one');
-  navigator.clipboard?.writeText(currentAddress).then(()=>alert('Copied!'), ()=>alert('Copy failed'));
-});
-document.getElementById('btn-faucet').addEventListener('click', ()=>{
-  if(!currentAddress) { alert('Generate an address first'); return; }
-  // create mint tx of 100 CADO directly into pending
-  createTx('mint', currentAddress, 100);
-  alert('Faucet created 100 CADO (in pending transactions). Mine to include in chain.');
-});
-document.getElementById('btn-send').addEventListener('click', ()=>{
-  const to = el('#toAddress').value.trim();
-  const amount = Number(el('#amount').value);
-  if(!currentAddress){ alert('Generate a wallet first'); return; }
-  if(!to){ alert('Enter a recipient address'); return; }
-  const result = createTx(currentAddress, to, amount);
-  if(!result.ok) alert(result.msg); else alert('Transaction created (pending)');
-});
-document.getElementById('btn-mine').addEventListener('click', async ()=>{
-  if(!currentAddress){ alert('Generate a wallet to receive mining reward'); return; }
-  C.difficulty = Number(document.getElementById('difficulty').value);
-  // run mining (async)
-  try{
-    await minePending(currentAddress);
-  }catch(e){
-    alert('Mining failed: ' + e);
-  }
-});
-document.getElementById('btn-reset').addEventListener('click', async ()=>{
-  if(!confirm('Reset the chain? This clears local state.')) return;
-  localStorage.removeItem(STATE_KEY);
-  await loadState();
-  alert('Chain reset');
-});
-document.getElementById('btn-export').addEventListener('click', ()=>{
-  const data = JSON.stringify({chain:C.chain,pending:C.pending});
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'cadocurrency-chain.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-document.getElementById('btn-import').addEventListener('click', ()=>{
-  const raw = el('#raw').value.trim();
-  if(!raw) return alert('Paste JSON into the Chain JSON box first.');
-  try{
-    const parsed = JSON.parse(raw);
-    C.chain = parsed.chain || C.chain;
-    C.pending = parsed.pending || [];
-    saveState();
-    refreshUI();
-    alert('Imported');
-  }catch(e){
-    alert('Invalid JSON: ' + e);
-  }
 });
 
-// init
-(async ()=>{ await loadState(); })();
-
+// Passive mining every second
+setInterval(() => {
+  cadocurrency += cps;
+  cadDisplay.textContent = Math.floor(cadocurrency);
+}, 1000);
 </script>
 </body>
 </html>
