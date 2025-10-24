@@ -5,75 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cadocurrency Miner</title>
 <style>
-  body {
-    background: #0d0d0d;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-  }
-  h1 { margin-top: 20px; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; }
-  #cadocurrencyDisplay {
-    font-size: 2em;
-    margin: 10px 0;
-  }
-  #cpsDisplay {
-    color: #ccc;
-    font-size: 1em;
-    margin-bottom: 20px;
-  }
-  #mineButton {
-    padding: 20px 50px;
-    font-size: 22px;
-    background: linear-gradient(45deg,#ffcc00,#ffaa00);
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    margin: 20px;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  #mineButton:active {
-    transform: scale(0.95);
-    box-shadow: 0 0 20px #ffcc00 inset;
-  }
-  .shop {
-    margin: 20px auto;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .item {
-    background: #222;
-    border-radius: 15px;
-    padding: 15px;
-    margin: 10px;
-    width: 200px;
-    transition: transform 0.2s;
-  }
-  .item:hover { transform: translateY(-5px); }
-  .item h3 { color: #00ccff; }
-  .item p { margin: 5px 0; }
-  button.buy {
-    background: #00ccff;
-    border: none;
-    padding: 8px 15px;
-    cursor: pointer;
-    margin-top: 10px;
-    border-radius: 8px;
-    transition: transform 0.1s;
-  }
-  button.buy:active { transform: scale(0.95); }
-  .floating {
-    position: absolute;
-    font-weight: bold;
-    color: #ffcc00;
-    animation: floatUp 1s forwards;
-  }
-  @keyframes floatUp {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
-  }
+body {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+h1 { margin-top: 20px; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; }
+#cadocurrencyDisplay { font-size: 2em; margin: 10px 0; }
+#cpsDisplay { color: #ccc; font-size: 1em; margin-bottom: 20px; }
+#mineButton {
+  padding: 20px 50px;
+  font-size: 22px;
+  background: linear-gradient(45deg,#ffcc00,#ffaa00);
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  margin: 20px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#mineButton:active { transform: scale(0.95); box-shadow: 0 0 20px #ffcc00 inset; }
+.shop { margin: 20px auto; display: flex; justify-content: center; flex-wrap: wrap; }
+.item { background: #222; border-radius: 15px; padding: 15px; margin: 10px; width: 200px; transition: transform 0.2s; }
+.item:hover { transform: translateY(-5px); }
+.item h3 { color: #00ccff; }
+.item p { margin: 5px 0; }
+button.buy { background: #00ccff; border: none; padding: 8px 15px; cursor: pointer; margin-top: 10px; border-radius: 8px; transition: transform 0.1s; }
+button.buy:active { transform: scale(0.95); }
+.floating { position: absolute; font-weight: bold; color: #ffcc00; animation: floatUp 1s forwards; }
+@keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.3); } }
+#transferSection { margin: 20px auto; }
+#friendId, #transferAmount { padding: 5px; width: 100px; margin: 5px; border-radius:5px; border:none;}
+#transferButton { padding:5px 10px; border-radius:5px; background:#ff66cc; border:none; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -104,7 +69,20 @@
   </div>
 </div>
 
+<h2>Transfer Cadocurrency</h2>
+<div id="transferSection">
+  Friend ID: <input type="text" id="friendId" placeholder="userId">
+  Amount: <input type="number" id="transferAmount" placeholder="₡">
+  <button id="transferButton">Send</button>
+</div>
+
 <script>
+// ----- Config -----
+const BIN_ID = "68fba81cd0ea881f40b8a124"; // put your JSONBin bin ID here
+const API_KEY = "$2a$10$zpjslVaoxbKMJkKdRhdbo.Dca9uAcSHCLE.FXIzaIy6S4GipqvL.6"; // JSONBin master key (client-side, unsafe for real money)
+let currentUserId = "guest123"; // demo user
+
+// ----- Miner State -----
 let cadocurrency = 0;
 let cps = 0;
 let upgrades = {
@@ -113,17 +91,21 @@ let upgrades = {
   quantum: {count: 0, cps: 20, cost: 1000}
 };
 
+// ----- DOM Elements -----
 const cadDisplay = document.getElementById('cadocurrencyDisplay');
 const cpsDisplay = document.getElementById('cpsDisplay');
 const mineButton = document.getElementById('mineButton');
 const shopButtons = document.querySelectorAll('.buy');
+const friendIdInput = document.getElementById('friendId');
+const transferAmountInput = document.getElementById('transferAmount');
+const transferButton = document.getElementById('transferButton');
 
+// ----- Helpers -----
 function updateDisplay() {
   cadDisplay.textContent = Math.floor(cadocurrency) + ' ₡';
   cpsDisplay.textContent = `CPS: ${cps} ₡/s`;
 }
 
-// Floating animation for clicks
 function floatText(x, y, text) {
   const span = document.createElement('span');
   span.textContent = text;
@@ -134,14 +116,69 @@ function floatText(x, y, text) {
   setTimeout(() => document.body.removeChild(span), 1000);
 }
 
-// Click to mine
+// ----- JSONBin API -----
+async function getBinData() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { "$2a$10$UGn2PaD5YfJ1z7c4xo4f4e0WHugS2BMfS4yrYRsDqukqty/V38OBO": API_KEY }
+  });
+  const data = await res.json();
+  return data.record;
+}
+
+async function updateBinData(newData) {
+  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": API_KEY
+    },
+    body: JSON.stringify(newData)
+  });
+}
+
+// Load current user data
+async function loadUser() {
+  const data = await getBinData();
+  const user = data.users.find(u => u.userId === currentUserId);
+  if (user) {
+    cadocurrency = user.cadocurrency;
+    for (let key in upgrades) {
+      upgrades[key].count = user.upgrades[key].count;
+      cps += upgrades[key].count * upgrades[key].cps;
+      upgrades[key].cost = Math.floor((key==="rig"?50:key==="farm"?250:1000) * Math.pow(1.5, upgrades[key].count));
+    }
+    updateDisplay();
+  }
+}
+
+// Save current user data
+async function saveUser() {
+  const data = await getBinData();
+  const user = data.users.find(u => u.userId === currentUserId);
+  if (user) {
+    user.cadocurrency = cadocurrency;
+    for (let key in upgrades) user.upgrades[key].count = upgrades[key].count;
+    user.lastUpdated = new Date().toISOString();
+    await updateBinData(data);
+  }
+}
+
+// ----- Mining -----
 mineButton.addEventListener('click', (e) => {
   cadocurrency += 1;
   updateDisplay();
   floatText(e.clientX, e.clientY, '+1');
+  saveUser();
 });
 
-// Buying upgrades
+// Passive CPS
+setInterval(() => {
+  cadocurrency += cps;
+  updateDisplay();
+  saveUser();
+}, 1000);
+
+// ----- Upgrades -----
 shopButtons.forEach(button => {
   button.addEventListener('click', () => {
     const type = button.dataset.type;
@@ -155,25 +192,41 @@ shopButtons.forEach(button => {
       button.previousElementSibling.textContent = `Cost: ${upgrade.cost} ₡`;
       updateDisplay();
       floatText(button.getBoundingClientRect().x + 50, button.getBoundingClientRect().y, `+${upgrade.cps}/s`);
+      saveUser();
     }
   });
 });
 
-// Passive mining
-setInterval(() => {
-  cadocurrency += cps;
-  updateDisplay();
-}, 1000);
+// ----- Transfer -----
+transferButton.addEventListener('click', async () => {
+  const receiverId = friendIdInput.value.trim();
+  const amount = parseInt(transferAmountInput.value);
+  if (!receiverId || isNaN(amount) || amount <= 0) {
+    alert("Enter valid friend ID and amount!");
+    return;
+  }
+  try {
+    const data = await getBinData();
+    const sender = data.users.find(u => u.userId === currentUserId);
+    const receiver = data.users.find(u => u.userId === receiverId);
+    if (!receiver) { alert("Friend not found"); return; }
+    if (sender.cadocurrency < amount) { alert("Insufficient balance"); return; }
 
-// Optional: random "Bitcoin market" effect for fun
-let btcPrice = 10000;
-setInterval(() => {
-  let change = (Math.random() - 0.5) * 50;
-  btcPrice += change;
-  btcPrice = Math.max(1000, btcPrice);
-  document.title = `Cadocurrency Miner — BTC: $${Math.floor(btcPrice)}`;
-}, 5000);
+    sender.cadocurrency -= amount;
+    receiver.cadocurrency += amount;
+    sender.lastUpdated = receiver.lastUpdated = new Date().toISOString();
+    await updateBinData(data);
+    cadocurrency = sender.cadocurrency;
+    updateDisplay();
+    alert(`Transferred ${amount} ₡ to ${receiver.username}`);
+  } catch (e) {
+    console.error(e);
+    alert("Transfer failed");
+  }
+});
 
+// Initial load
+loadUser();
 </script>
 </body>
 </html>
