@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,26 +6,36 @@
 <title>Cadocurrency Miner</title>
 <style>
   body {
-    background: #1a1a1a;
+    background: #0d0d0d;
     color: #fff;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     text-align: center;
     margin: 0;
     padding: 0;
   }
-  h1 { margin-top: 20px; }
+  h1 { margin-top: 20px; color: #ffcc00; text-shadow: 0 0 10px #ffcc00; }
+  #cadocurrencyDisplay {
+    font-size: 2em;
+    margin: 10px 0;
+  }
+  #cpsDisplay {
+    color: #ccc;
+    font-size: 1em;
+    margin-bottom: 20px;
+  }
   #mineButton {
-    padding: 20px 40px;
-    font-size: 20px;
-    background: #ffcc00;
+    padding: 20px 50px;
+    font-size: 22px;
+    background: linear-gradient(45deg,#ffcc00,#ffaa00);
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
     cursor: pointer;
     margin: 20px;
-    transition: transform 0.1s;
+    transition: transform 0.1s, box-shadow 0.1s;
   }
   #mineButton:active {
     transform: scale(0.95);
+    box-shadow: 0 0 20px #ffcc00 inset;
   }
   .shop {
     margin: 20px auto;
@@ -35,25 +44,42 @@
     flex-wrap: wrap;
   }
   .item {
-    background: #333;
-    border-radius: 10px;
-    padding: 10px;
+    background: #222;
+    border-radius: 15px;
+    padding: 15px;
     margin: 10px;
-    width: 180px;
+    width: 200px;
+    transition: transform 0.2s;
   }
+  .item:hover { transform: translateY(-5px); }
+  .item h3 { color: #00ccff; }
+  .item p { margin: 5px 0; }
   button.buy {
     background: #00ccff;
     border: none;
-    padding: 5px 10px;
+    padding: 8px 15px;
     cursor: pointer;
-    margin-top: 5px;
-    border-radius: 5px;
+    margin-top: 10px;
+    border-radius: 8px;
+    transition: transform 0.1s;
+  }
+  button.buy:active { transform: scale(0.95); }
+  .floating {
+    position: absolute;
+    font-weight: bold;
+    color: #ffcc00;
+    animation: floatUp 1s forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
   }
 </style>
 </head>
 <body>
 <h1>Cadocurrency Miner</h1>
-<p>Cadocurrency: <span id="cadocurrency">0</span> ₡</p>
+<div id="cadocurrencyDisplay">0 ₡</div>
+<div id="cpsDisplay">CPS: 0 ₡/s</div>
 <button id="mineButton">Mine Cadocurrency!</button>
 
 <h2>Upgrades</h2>
@@ -80,21 +106,39 @@
 
 <script>
 let cadocurrency = 0;
-let cps = 0; // cadocurrency per second
+let cps = 0;
 let upgrades = {
   rig: {count: 0, cps: 1, cost: 50},
   farm: {count: 0, cps: 5, cost: 250},
   quantum: {count: 0, cps: 20, cost: 1000}
 };
 
-const cadDisplay = document.getElementById('cadocurrency');
+const cadDisplay = document.getElementById('cadocurrencyDisplay');
+const cpsDisplay = document.getElementById('cpsDisplay');
 const mineButton = document.getElementById('mineButton');
 const shopButtons = document.querySelectorAll('.buy');
 
-// Clicking to mine
-mineButton.addEventListener('click', () => {
+function updateDisplay() {
+  cadDisplay.textContent = Math.floor(cadocurrency) + ' ₡';
+  cpsDisplay.textContent = `CPS: ${cps} ₡/s`;
+}
+
+// Floating animation for clicks
+function floatText(x, y, text) {
+  const span = document.createElement('span');
+  span.textContent = text;
+  span.className = 'floating';
+  span.style.left = x + 'px';
+  span.style.top = y + 'px';
+  document.body.appendChild(span);
+  setTimeout(() => document.body.removeChild(span), 1000);
+}
+
+// Click to mine
+mineButton.addEventListener('click', (e) => {
   cadocurrency += 1;
-  cadDisplay.textContent = Math.floor(cadocurrency);
+  updateDisplay();
+  floatText(e.clientX, e.clientY, '+1');
 });
 
 // Buying upgrades
@@ -106,19 +150,30 @@ shopButtons.forEach(button => {
       cadocurrency -= upgrade.cost;
       upgrade.count += 1;
       cps += upgrade.cps;
-      upgrade.cost = Math.floor(upgrade.cost * 1.5); // increase cost
+      upgrade.cost = Math.floor(upgrade.cost * 1.5);
       button.dataset.cost = upgrade.cost;
       button.previousElementSibling.textContent = `Cost: ${upgrade.cost} ₡`;
-      cadDisplay.textContent = Math.floor(cadocurrency);
+      updateDisplay();
+      floatText(button.getBoundingClientRect().x + 50, button.getBoundingClientRect().y, `+${upgrade.cps}/s`);
     }
   });
 });
 
-// Passive mining every second
+// Passive mining
 setInterval(() => {
   cadocurrency += cps;
-  cadDisplay.textContent = Math.floor(cadocurrency);
+  updateDisplay();
 }, 1000);
+
+// Optional: random "Bitcoin market" effect for fun
+let btcPrice = 10000;
+setInterval(() => {
+  let change = (Math.random() - 0.5) * 50;
+  btcPrice += change;
+  btcPrice = Math.max(1000, btcPrice);
+  document.title = `Cadocurrency Miner — BTC: $${Math.floor(btcPrice)}`;
+}, 5000);
+
 </script>
 </body>
 </html>
