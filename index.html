@@ -78,8 +78,8 @@ button.buy:active { transform: scale(0.95); }
 
 <script>
 // ----- Config -----
-const BIN_ID = "68fba81cd0ea881f40b8a124"; // put your JSONBin bin ID here
-const API_KEY = "$2a$10$zpjslVaoxbKMJkKdRhdbo.Dca9uAcSHCLE.FXIzaIy6S4GipqvL.6"; // JSONBin master key (client-side, unsafe for real money)
+const BIN_ID = "68fba81cd0ea881f40b8a124"; // your JSONBin bin ID
+const API_KEY = "$2a$10$zpjslVaoxbKMJkKdRhdbo.Dca9uAcSHCLE.FXIzaIy6S4GipqvL.6"; // master key (client-side unsafe)
 let currentUserId = "guest123"; // demo user
 
 // ----- Miner State -----
@@ -118,10 +118,8 @@ function floatText(x, y, text) {
 
 // ----- JSONBin API -----
 async function getBinData() {
- const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-  headers: { "X-Master-Key": API_KEY }
-});
-
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+    headers: { "X-Master-Key": API_KEY }
   });
   const data = await res.json();
   return data.record;
@@ -138,7 +136,7 @@ async function updateBinData(newData) {
   });
 }
 
-// Load current user data
+// ----- Load / Save -----
 async function loadUser() {
   const data = await getBinData();
   const user = data.users.find(u => u.userId === currentUserId);
@@ -153,7 +151,6 @@ async function loadUser() {
   }
 }
 
-// Save current user data
 async function saveUser() {
   const data = await getBinData();
   const user = data.users.find(u => u.userId === currentUserId);
@@ -173,7 +170,7 @@ mineButton.addEventListener('click', (e) => {
   saveUser();
 });
 
-// Passive CPS
+// Passive CPS tick
 setInterval(() => {
   cadocurrency += cps;
   updateDisplay();
@@ -227,7 +224,7 @@ transferButton.addEventListener('click', async () => {
   }
 });
 
-// Initial load
+// ----- Init -----
 loadUser();
 </script>
 </body>
