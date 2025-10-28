@@ -118,8 +118,10 @@ function floatText(x, y, text) {
 
 // ----- JSONBin API -----
 async function getBinData() {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: { "$2a$10$UGn2PaD5YfJ1z7c4xo4f4e0WHugS2BMfS4yrYRsDqukqty/V38OBO": API_KEY }
+ const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+  headers: { "X-Master-Key": API_KEY }
+});
+
   });
   const data = await res.json();
   return data.record;
